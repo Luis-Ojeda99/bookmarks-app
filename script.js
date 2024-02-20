@@ -46,6 +46,45 @@ function validateForm(nameValue, urlValue) {
     return true;
 }
 
+// Function to build bookmarks DOM
+function buildBookmarks() {
+    // Remove all bookmark elements from bookmarks container
+    bookmarksContainer.textContent = '';
+    
+    // Build items
+    bookmarks.forEach((bookmark) => {
+        const { name, url } = bookmark;
+
+        // Item element
+        const item = document.createElement('div');
+        item.classList.add('item');
+
+        // Close icon element
+        const closeIcon = document.createElement('i');
+        closeIcon.classList.add('fa-solid','fa-trash-can');
+        closeIcon.setAttribute('title', 'Delete Bookmark');
+        closeIcon.setAttribute('onclick', `deleteBookmark('${url}')`)
+
+        // Favicon / website Link container element
+        const linkInfo = document.createElement('div');
+        linkInfo.classList.add('bookmark-name');
+        // Favicon element
+        const favicon = document.createElement('img');
+        favicon.setAttribute('src', `https://www.google.com/s2/favicons?domain=${url}`);
+        favicon.setAttribute('alt', 'Favicon');
+        // Website Link element
+        const webLink = document.createElement('a');
+        webLink.setAttribute('href', `${url}`);
+        webLink.setAttribute('target', '_blank');
+        webLink.textContent = name;
+
+        // Append the item to bookmarks container
+        linkInfo.append(favicon, webLink);
+        item.append(closeIcon, linkInfo);
+        bookmarksContainer.appendChild(item);
+    });
+}
+
 // Function to fetch bookmarks from localStorage
 function fetchBookmarks() {
     // Get bookmarks from localStorage if they are available
@@ -57,11 +96,27 @@ function fetchBookmarks() {
         bookmarks = [
             {
                 name: 'Ojeda Portfolio ',
-                url: 'https://ojedaportfolio.com'
-            }
+                url: 'https://ojedaportfolio.com',
+            },
         ];
         localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
     }
+
+    // Call the build bookmarks function
+    buildBookmarks();
+}
+
+// Function to delete bookmarks
+function deleteBookmark(url) {
+    bookmarks.forEach((bookmark, i) => {
+        if(bookmark.url === url) {
+            bookmarks.splice(i, 1);
+        }
+    });
+
+    // Update bookmakrs array in localStorage without the removed bookmark, and re-populate the DOM.
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+    fetchBookmarks();
 }
 
 // Function to handle the data from the Form
@@ -70,7 +125,7 @@ function storeBookmark(e) {
     const nameValue = websiteNameElement.value;
     let urlValue = websiteUrlElement.value;
 
-    // If the user have not included the full link with the Hypertext transfer protocol at the begining of it, add it to the link.
+    // If the user has not included the full link with the Hypertext transfer protocol at the beginning of it, add it to the link.
     if (!urlValue.includes('https://') && !urlValue.includes('http://')) {
         urlValue = `https://${urlValue}`;
     }
@@ -85,12 +140,12 @@ function storeBookmark(e) {
         name: nameValue,
         url: urlValue,
     };
-    
-    //Push the book saved bookmark into the bookmarks array
+
+    // Push the saved bookmark into the bookmarks array
     bookmarks.push(bookmark);
 
     // Save the array to local Storage
-    localStorage.setItem('bookmarks', JSON.stringify(bookmark));
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
     fetchBookmarks();
 
     // Clear the form and take the user back to the Website name input field
@@ -101,5 +156,5 @@ function storeBookmark(e) {
 // Event Listener
 bookmarkForm.addEventListener('submit', storeBookmark);
 
-// On load, fetch Bookmarks
-fetchBookmarks(); 
+// On Load, Fetch Bookmarks
+fetchBookmarks();
